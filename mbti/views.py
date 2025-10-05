@@ -203,27 +203,60 @@ def result_pdf_view(request):
         messages.error(request, 'PDF导出模块未安装，请稍后重试或联系管理员安装 reportlab')
         return redirect('mbti:result')
 
-    # 注册中文字体，避免乱码
+    # 注册中文字体，避免乱码（跨平台）
     base_font = 'Helvetica'
     try:
-        # 尝试多个常见的中文字体路径
+        import os, sys
+        # 常见平台字体路径（包含 Windows、Linux(Ubuntu) 与 macOS）
         font_paths = [
+            # Windows
             r'C:\Windows\Fonts\msyh.ttf',  # 微软雅黑
-            r'C:\Windows\Fonts\simsun.ttc',  # 宋体
             r'C:\Windows\Fonts\simhei.ttf',  # 黑体
+            r'C:\Windows\Fonts\simsun.ttc',  # 宋体（可能不被TTFont识别）
             r'C:\Windows\Fonts\SIMKAI.TTF',  # 楷体
         ]
-        
+
+        # Linux 常见中文字体（优先使用 Noto/思源系列，ReportLab 对 OTF/TTF支持更稳定）
+        linux_candidates = [
+            '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+            '/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf',
+            '/usr/share/fonts/noto-cjk/NotoSansCJKsc-Regular.otf',
+            '/usr/share/fonts/noto/NotoSansCJKsc-Regular.otf',
+            '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
+            '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',
+            '/usr/share/fonts/truetype/arphic/ukai.ttf',
+            '/usr/share/fonts/truetype/arphic/uming.ttf',
+        ]
+
+        # macOS 常见中文字体
+        mac_candidates = [
+            '/System/Library/Fonts/PingFang.ttc',
+            '/System/Library/Fonts/STSong.ttf',
+            '/Library/Fonts/Songti.ttc',
+            '/Library/Fonts/Heiti.ttc',
+        ]
+
+        if sys.platform.startswith('linux'):
+            font_paths.extend(linux_candidates)
+        elif sys.platform == 'darwin':
+            font_paths.extend(mac_candidates)
+
+        # 项目内置字体（如存在）：static/fonts/NotoSansCJKsc-Regular.otf
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        project_font = os.path.join(BASE_DIR, 'static', 'fonts', 'NotoSansCJKsc-Regular.otf')
+        font_paths.append(project_font)
+
         for font_path in font_paths:
             try:
-                import os
                 if os.path.exists(font_path):
                     pdfmetrics.registerFont(TTFont('CN', font_path))
                     base_font = 'CN'
                     break
-            except:
+            except Exception:
+                # 某些 .ttc 字体包不被 TTFont 支持，继续尝试下一个
                 continue
     except Exception:
+        # 字体注册失败时退回默认英文字体（中文可能出现方块）
         pass
 
     # 样式
