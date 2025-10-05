@@ -198,6 +198,7 @@ def result_pdf_view(request):
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfbase.cidfonts import UnicodeCIDFont
         from reportlab.lib.units import inch
     except Exception:
         messages.error(request, 'PDF导出模块未安装，请稍后重试或联系管理员安装 reportlab')
@@ -210,9 +211,12 @@ def result_pdf_view(request):
         # 常见平台字体路径（包含 Windows、Linux(Ubuntu) 与 macOS）
         font_paths = [
             # Windows
-            r'C:\Windows\Fonts\msyh.ttf',  # 微软雅黑
+            r'C:\Windows\Fonts\msyh.ttf',  # 微软雅黑 (TTF)
+            r'C:\Windows\Fonts\msyh.ttc',  # 微软雅黑 (TTC)
             r'C:\Windows\Fonts\simhei.ttf',  # 黑体
             r'C:\Windows\Fonts\simsun.ttc',  # 宋体（可能不被TTFont识别）
+            r'C:\Windows\Fonts\simsun.ttf',  # 宋体 (TTF)
+            r'C:\Windows\Fonts\NSimSun.ttf',  # 新宋体
             r'C:\Windows\Fonts\SIMKAI.TTF',  # 楷体
         ]
 
@@ -255,6 +259,13 @@ def result_pdf_view(request):
             except Exception:
                 # 某些 .ttc 字体包不被 TTFont 支持，继续尝试下一个
                 continue
+        # 若仍未找到可用 TTF/TTC，尝试使用内置的 CJK 字体（不需外部文件）
+        if base_font == 'Helvetica':
+            try:
+                pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
+                base_font = 'STSong-Light'
+            except Exception:
+                pass
     except Exception:
         # 字体注册失败时退回默认英文字体（中文可能出现方块）
         pass
