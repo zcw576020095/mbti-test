@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<h2>登录</h2>
+<form method="post" class="card" autocomplete="off">
+  {% csrf_token %}
+  <label>用户名</label>
+  <input type="text" name="username" placeholder="请输入用户名" required />
+  <label>密码</label>
+  <div class="input-with-toggle">
+    <input type="password" id="login_password" name="password" placeholder="请输入密码" required />
+    <button type="button" class="toggle-visibility" aria-label="显示/隐藏密码" data-target="login_password">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  </div>
+  <button type="submit" class="btn primary" style="width:100%">登录</button>
+  <p>没有账号？<a href="/users/register/">去注册</a></p>
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-6.14M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.77 21.77 0 0 1-3.17 4.49"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    document.querySelectorAll('button.toggle-visibility[data-target]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const id = btn.getAttribute('data-target');
+        const input = document.getElementById(id);
+        if (!input) return;
+        const isPwd = input.type === 'password';
+        input.type = isPwd ? 'text' : 'password';
+        btn.innerHTML = isPwd ? EYE_OFF : EYE_ON;
+      });
+    });
+  });
+  </script>
+{% endblock %}

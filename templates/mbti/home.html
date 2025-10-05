@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}主页{% endblock %}
+{% block content %}
+<section class="hero" id="hero">
+  <h1>发现你的性格类型</h1>
+  <p>专业的 MBTI 人格测试，3-5 分钟即可获得详细的性格分析报告。</p>
+  <div class="btn-group">
+    {% if user.is_authenticated %}
+      <a class="btn primary" href="{% url 'mbti:test' %}">开始测试</a>
+    {% else %}
+      <a class="btn primary" href="{% url 'users:login' %}">登录后开始测试</a>
+      <a class="btn" href="{% url 'users:register' %}">注册</a>
+    {% endif %}
+  </div>
+</section>
+
+<!-- MBTI介绍部分 -->
+<section class="mbti-intro" id="mbti-intro">
+  <div class="card emphasis">
+    <h2>什么是MBTI人格测试？</h2>
+    <div class="intro-content">
+      <div class="intro-text">
+        <p><strong>MBTI（Myers-Briggs Type Indicator）</strong>是世界上最权威的人格测试工具之一，基于心理学家卡尔·荣格的人格类型理论发展而来。</p>
+        
+        <h3>🎯 测试原理</h3>
+        <p>MBTI通过四个维度来分析个人的心理偏好：</p>
+        <ul>
+          <li><strong>外向(E) vs 内向(I)</strong> - 你如何获得能量和关注焦点</li>
+          <li><strong>感觉(S) vs 直觉(N)</strong> - 你如何收集和处理信息</li>
+          <li><strong>思考(T) vs 情感(F)</strong> - 你如何做出决策</li>
+          <li><strong>判断(J) vs 知觉(P)</strong> - 你如何组织生活和工作</li>
+        </ul>
+        
+        <h3>✨ 测试价值</h3>
+        <div class="value-grid">
+          <div class="value-item">
+            <div class="value-icon">🧭</div>
+            <div class="value-title">自我认知</div>
+            <div class="value-desc">深入了解自己的性格特点、优势和成长空间</div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">🤝</div>
+            <div class="value-title">人际关系</div>
+            <div class="value-desc">改善沟通方式，建立更和谐的人际关系</div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">💼</div>
+            <div class="value-title">职业发展</div>
+            <div class="value-desc">找到适合的职业方向和工作环境</div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">📈</div>
+            <div class="value-title">个人成长</div>
+            <div class="value-desc">制定针对性的自我提升计划</div>
+          </div>
+        </div>
+        
+        <h3>🔍 测试特点</h3>
+        <div class="features">
+          <span class="feature-tag">✅ 科学权威</span>
+          <span class="feature-tag">✅ 快速便捷</span>
+          <span class="feature-tag">✅ 详细报告</span>
+          <span class="feature-tag">✅ 实用指导</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="types" id="types">
+  <div class="card emphasis">
+    <h2>16种性格类型预览</h2>
+    <p>MBTI 将人格分为 16 种类型，每种类型都有独特的特征和优势：</p>
+    <div class="types-grid">
+      <div class="type-card">
+        <div class="type-icon">🧠</div>
+        <div class="type-title">建筑师</div>
+        <div class="type-code">INTJ</div>
+        <div class="type-desc">富有策略与远见，擅长系统化思考与规划。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🔬</div>
+        <div class="type-title">逻辑学家</div>
+        <div class="type-code">INTP</div>
+        <div class="type-desc">好奇心强、热爱探索，追求逻辑与知识的边界。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🧭</div>
+        <div class="type-title">指挥官</div>
+        <div class="type-code">ENTJ</div>
+        <div class="type-desc">果断、组织能力强，擅长目标导向与资源协调。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🎤</div>
+        <div class="type-title">辩论家</div>
+        <div class="type-code">ENTP</div>
+        <div class="type-desc">思维灵活、善于辩论，热衷挑战与创新观点。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🛡️</div>
+        <div class="type-title">提倡者</div>
+        <div class="type-code">INFJ</div>
+        <div class="type-desc">理想主义者，富有同情心，追求意义与价值。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🎭</div>
+        <div class="type-title">调停者</div>
+        <div class="type-code">INFP</div>
+        <div class="type-desc">创造力强、价值观驱动，追求真实与和谐。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🎯</div>
+        <div class="type-title">主人公</div>
+        <div class="type-code">ENFJ</div>
+        <div class="type-desc">天生的领导者，善于激励他人实现潜能。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🌟</div>
+        <div class="type-title">竞选者</div>
+        <div class="type-code">ENFP</div>
+        <div class="type-desc">热情洋溢、富有创意，善于发现可能性。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">📋</div>
+        <div class="type-title">物流师</div>
+        <div class="type-code">ISTJ</div>
+        <div class="type-desc">实用主义的事实家，可靠性毋庸置疑。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🛡️</div>
+        <div class="type-title">守护者</div>
+        <div class="type-code">ISFJ</div>
+        <div class="type-desc">非常专注、温暖的守护者，时刻准备保护爱的人。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">📊</div>
+        <div class="type-title">总经理</div>
+        <div class="type-code">ESTJ</div>
+        <div class="type-desc">出色的管理者，在管理事物或人员方面无与伦比。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🤝</div>
+        <div class="type-title">执政官</div>
+        <div class="type-code">ESFJ</div>
+        <div class="type-desc">极有同情心、受欢迎、总是热心帮助他人。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🔧</div>
+        <div class="type-title">鉴赏家</div>
+        <div class="type-code">ISTP</div>
+        <div class="type-desc">大胆而实际的实验家，擅长使用各种工具。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🎨</div>
+        <div class="type-title">探险家</div>
+        <div class="type-code">ISFP</div>
+        <div class="type-desc">灵活、迷人的艺术家，时刻准备探索新的可能性。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">⚡</div>
+        <div class="type-title">企业家</div>
+        <div class="type-code">ESTP</div>
+        <div class="type-desc">聪明、精力充沛、善于感知的企业家，真正享受生活。</div>
+      </div>
+      <div class="type-card">
+        <div class="type-icon">🎭</div>
+        <div class="type-title">娱乐家</div>
+        <div class="type-code">ESFP</div>
+        <div class="type-desc">自发的、精力充沛的娱乐家，生活在他们周围从不无聊。</div>
+      </div>
+    </div>
+    <div class="more-types">
+      <p>完整的16种MBTI人格类型，每种都有独特的特征和优势。</p>
+      {% if user.is_authenticated %}
+        <a class="btn secondary" href="{% url 'mbti:test' %}">立即测试，发现你的类型</a>
+      {% else %}
+        <a class="btn secondary" href="{% url 'users:login' %}">登录开始测试</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+{% block title %}MBTI 性格测试{% endblock %}
+
+{% block content %}
+<div class="container mt-4" id="test-container"
+      data-questions-on-page="{{ page_obj.object_list|length }}"
+      data-current-page="{{ current_page }}"
+      data-total-pages="{{ total_pages }}"
+      data-total-questions="{{ total_questions }}"
+      data-per-page="{{ page_obj.paginator.per_page }}"
+      data-next-page="{% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">MBTI 性格测试</h3>
+                    <div class="progress mt-3">
+                        {% widthratio current_page total_pages 100 as progress_width %}
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             data-width="{{ progress_width }}"
+                             aria-valuenow="{{ current_page }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="{{ total_pages }}">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="text-muted">第 {{ current_page }} 页 / 共 {{ total_pages }} 页</span>
+                        <span class="text-muted">已完成 <span id="progress-text">0</span> / {{ total_questions }} 题</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'mbti:submit' %}" id="testForm">
+                        {% csrf_token %}
+                        
+                        {% for question in page_obj %}
+                        <div class="question-card mb-4 p-4 border rounded shadow-sm">
+                            <h5 class="question-title mb-3">{{ forloop.counter0|add:page_obj.start_index }}. {{ question.text }}</h5>
+                            <div class="likert-scale">
+                                <div class="scale-container d-flex justify-content-center align-items-end">
+                                    <!-- 非常同意标签和第一个最大按钮 -->
+                                    <div class="d-flex flex-column align-items-center mx-2">
+                                        <span class="agree-label text-success fw-bold mb-2">非常同意</span>
+                                        <div class="scale-option text-center">
+                                            <input class="form-check-input scale-radio d-none" type="radio" 
+                                                   name="q_{{ question.id }}" 
+                                                   id="q{{ question.id }}_1" 
+                                                   value="1"
+                                                   {% if saved_answers|get_item:question.id|stringformat:"s" == "1" %}checked{% endif %}>
+                                            <label class="scale-circle scale-1" for="q{{ question.id }}_1">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 中间的按钮 -->
+                                    {% for value in "23456"|make_list %}
+                                    <div class="scale-option text-center mx-2">
+                                        <input class="form-check-input scale-radio d-none" type="radio" 
+                                               name="q_{{ question.id }}" 
+                                               id="q{{ question.id }}_{{ value }}" 
+                                               value="{{ value }}"
+                                               {% if saved_answers|get_item:question.id|stringformat:"s" == value %}checked{% endif %}>
+                                        <label class="scale-circle scale-{{ value }}" for="q{{ question.id }}_{{ value }}">
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- 非常不同意标签和第七个最大按钮 -->
+                                    <div class="d-flex flex-column align-items-center mx-2">
+                                        <span class="disagree-label text-danger fw-bold mb-2">非常不同意</span>
+                                        <div class="scale-option text-center">
+                                            <input class="form-check-input scale-radio d-none" type="radio" 
+                                                   name="q_{{ question.id }}" 
+                                                   id="q{{ question.id }}_7" 
+                                                   value="7"
+                                                   {% if saved_answers|get_item:question.id|stringformat:"s" == "7" %}checked{% endif %}>
+                                            <label class="scale-circle scale-7" for="q{{ question.id }}_7">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}" 
+                                       class="btn btn-secondary" id="prevBtn">
+                                        上一页
+                                    </a>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                {% if page_obj.has_next %}
+                                    <button type="button" class="btn btn-secondary" id="nextBtn">
+                                        下一页
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-secondary" id="submitBtn">
+                                        提交测试
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.scale-container {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.scale-label {
+    font-weight: bold;
+    color: #495057;
+    margin: 0 10px;
+    align-self: center;
+}
+
+.agree-label {
+    color: #28a745;
+}
+
+.disagree-label {
+    color: #6f42c1;
+}
+
+.scale-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.scale-circle {
+    display: inline-block;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* 按程度大小排列：特大-大-中-小-中-大-特大 */
+.scale-circle.scale-1 { 
+    width: 60px; 
+    height: 60px; 
+    border-color: #28a745;
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.scale-circle.scale-2 { 
+    width: 50px; 
+    height: 50px; 
+    border-color: #28a745;
+    background: linear-gradient(135deg, #40c463, #28a745);
+}
+
+.scale-circle.scale-3 { 
+    width: 40px; 
+    height: 40px; 
+    border-color: #28a745;
+    background: linear-gradient(135deg, #5dd675, #40c463);
+}
+
+.scale-circle.scale-4 { 
+    width: 30px; 
+    height: 30px; 
+    border-color: #6c757d;
+    background: linear-gradient(135deg, #adb5bd, #6c757d);
+}
+
+.scale-circle.scale-5 { 
+    width: 40px; 
+    height: 40px; 
+    border-color: #6f42c1;
+    background: linear-gradient(135deg, #9c6bdb, #6f42c1);
+}
+
+.scale-circle.scale-6 { 
+    width: 50px; 
+    height: 50px; 
+    border-color: #6f42c1;
+    background: linear-gradient(135deg, #8a5cf5, #6f42c1);
+}
+
+.scale-circle.scale-7 { 
+    width: 60px; 
+    height: 60px; 
+    border-color: #6f42c1;
+    background: linear-gradient(135deg, #6f42c1, #5a2d91);
+}
+
+.scale-radio:checked + .scale-circle {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(0,123,255,0.5);
+    border-color: #007bff;
+}
+
+.scale-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.question-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.question-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+#validation-message {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('testForm');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const container = document.getElementById('test-container');
+    const questionsOnPage = parseInt(container.dataset.questionsOnPage) || 10;
+    const perPage = parseInt(container.dataset.perPage) || 10;
+    const currentPage = parseInt(container.dataset.currentPage) || 1;
+    const totalPages = parseInt(container.dataset.totalPages) || 1;
+    const totalQuestions = parseInt(container.dataset.totalQuestions) || 88;
+    const nextPage = container.dataset.nextPage;
+    
+    // 调试变量值
+    console.log('页面变量(来自#test-container):', {
+        questionsOnPage,
+        currentPage,
+        totalPages,
+        totalQuestions,
+        nextPage
+    });
+
+    if (!container) {
+        console.warn('未找到测试容器#test-container，可能选择到了其他.container。');
+    }
+    
+    // 调试当前页面实际题目数量
+    const actualQuestions = form.querySelectorAll('.question-card').length;
+    console.log('实际题目数量:', actualQuestions);
+    console.log('预期题目数量:', questionsOnPage);
+    
+    // 创建验证消息元素（移除原有的顶部消息）
+    let validationMessage = document.getElementById('validation-message');
+    if (validationMessage) {
+        validationMessage.remove();
+    }
+    
+    // 验证当前页面是否完成
+    function validateCurrentPage() {
+        const answeredQuestions = form.querySelectorAll('input[type="radio"]:checked').length;
+        const actualQuestions = form.querySelectorAll('.question-card').length;
+        const isPageComplete = answeredQuestions >= actualQuestions;
+        
+        // 调试验证信息
+        console.log('验证信息:', {
+            answeredQuestions,
+            actualQuestions,
+            questionsOnPage,
+            isPageComplete
+        });
+        
+        // 更新按钮样式但不禁用按钮，让用户可以点击触发验证
+        if (nextBtn) {
+            nextBtn.classList.toggle('btn-primary', isPageComplete);
+            nextBtn.classList.toggle('btn-secondary', !isPageComplete);
+        }
+        
+        if (submitBtn) {
+            submitBtn.classList.toggle('btn-success', isPageComplete);
+            submitBtn.classList.toggle('btn-secondary', !isPageComplete);
+        }
+        
+        return isPageComplete;
+    }
+    
+    // 显示弹框提示并定位到未完成的题目
+    function showValidationAlert() {
+        const unansweredQuestions = [];
+        const questionCards = form.querySelectorAll('.question-card');
+        
+        questionCards.forEach((card, index) => {
+            const radios = card.querySelectorAll('input[type="radio"]');
+            const isAnswered = Array.from(radios).some(radio => radio.checked);
+            if (!isAnswered) {
+                // 获取题目标题中的题目编号
+                const titleElement = card.querySelector('.question-title');
+                const titleText = titleElement ? titleElement.textContent : '';
+                const questionNumber = titleText.split('.')[0];
+                
+                unansweredQuestions.push({
+                    element: card,
+                    number: questionNumber
+                });
+            }
+        });
+        
+        if (unansweredQuestions.length > 0) {
+            // 显示弹框提示 - 只提示当前页面未完成的题目
+            alert(`请完成第 ${unansweredQuestions.map(q => q.number).join('、')} 题后再继续`);
+            
+            // 自动定位到第一个未完成的题目
+            const firstUnanswered = unansweredQuestions[0].element;
+            firstUnanswered.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // 高亮显示未完成的题目
+            firstUnanswered.style.border = '2px solid #dc3545';
+            firstUnanswered.style.backgroundColor = '#fff5f5';
+            
+            // 3秒后移除高亮
+            setTimeout(() => {
+                firstUnanswered.style.border = '';
+                firstUnanswered.style.backgroundColor = '';
+            }, 3000);
+            
+            return false;
+        }
+        return true;
+    }
+    
+    // 自动保存功能
+    function saveProgress() {
+        const formData = new FormData(form);
+        const answers = {};
+        
+        for (let [key, value] of formData.entries()) {
+            if (key.startsWith('q_')) {
+                answers[key] = value;
+            }
+        }
+        
+        fetch('{% url "mbti:save_progress" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({answers: answers})
+        });
+    }
+    
+    // 监听选项变化
+    form.addEventListener('change', function(e) {
+        if (e.target.type === 'radio') {
+            saveProgress();
+            updateProgress();
+            validateCurrentPage();
+        }
+    });
+    
+    // 更新进度显示
+    function updateProgress() {
+        const answeredQuestions = form.querySelectorAll('input[type="radio"]:checked').length;
+        const actualQuestions = form.querySelectorAll('.question-card').length;
+        const completedPreviousPages = (currentPage - 1) * perPage;
+        const totalCompleted = completedPreviousPages + answeredQuestions;
+        
+        // 更新进度条
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            const percentage = Math.round((totalCompleted / totalQuestions) * 100);
+            progressBar.style.width = percentage + '%';
+            progressBar.setAttribute('aria-valuenow', totalCompleted);
+        }
+        
+        // 更新进度文本 - 显示当前页面进度
+        const progressText = document.querySelector('#progress-text');
+        if (progressText) {
+            // 显示累计完成的题目数量（包括已完成的前置页）
+            progressText.textContent = totalCompleted;
+        }
+        
+        // 验证当前页面
+        validateCurrentPage();
+    }
+    
+    // 设置进度条宽度
+    function setProgressBarWidth() {
+        const progressBars = document.querySelectorAll('.progress-bar[data-width]');
+        progressBars.forEach(function(bar) {
+            const width = bar.getAttribute('data-width');
+            bar.style.width = width + '%';
+        });
+    }
+    
+    // 页面加载时初始化
+    setProgressBarWidth();
+    updateProgress();
+    validateCurrentPage();
+    
+    // 下一页按钮点击事件
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // 阻止默认行为
+            
+            if (!validateCurrentPage()) {
+                showValidationAlert();
+                return false;
+            }
+            
+            // 如果验证通过，保存进度并跳转
+            saveProgress();
+            setTimeout(function() {
+                // 调试分页逻辑
+                console.log('点击下一页时的变量值:', {
+                    currentPage: currentPage,
+                    totalPages: totalPages,
+                    'currentPage >= totalPages': currentPage >= totalPages,
+                    'currentPage类型': typeof currentPage,
+                    'totalPages类型': typeof totalPages
+                });
+                
+                // 检查是否是最后一页
+                if (currentPage >= totalPages) {
+                    // 如果是最后一页，提示用户点击提交按钮
+                    alert('这是最后一页，请点击"提交测试"按钮完成测试。');
+                    return false;
+                } else {
+                    // 不是最后一页，跳转到下一页
+                    const nextPageNumber = currentPage + 1;
+                    console.log('跳转到页面:', nextPageNumber);
+                    window.location.href = '?page=' + nextPageNumber;
+                }
+            }, 100);
+        });
+    }
+
+    // 上一页按钮点击事件：跳转前保存当前页答案，避免丢失
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            saveProgress();
+            const href = prevBtn.getAttribute('href');
+            setTimeout(function() {
+                window.location.href = href;
+            }, 100);
+        });
+    }
+    
+    // 表单提交事件
+    form.addEventListener('submit', function(e) {
+        if (!validateCurrentPage()) {
+            e.preventDefault();
+            showValidationAlert();
+            return false;
+        }
+        saveProgress();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+{% block title %}测试结果 - {{ result.type_code }}{% endblock %}
+
+{% block content %}
+<style>
+/* 防止字体重叠的样式 */
+.card-title {
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-body p {
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.card-header h6 {
+    line-height: 1.3;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.progress-bar {
+    line-height: 1.2;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.text-muted {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+/* 确保卡片内容不重叠 */
+.card {
+    margin-bottom: 1rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-header {
+    padding: 0.75rem 1rem;
+}
+
+/* 维度分析区域优化 */
+.dimension-card {
+    min-height: 180px;
+}
+
+.dimension-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 多维度分析卡片优化 */
+.analysis-card {
+    min-height: 150px;
+}
+
+.analysis-card .card-body {
+    padding: 0.75rem;
+}
+
+.analysis-card .card-header {
+    padding: 0.5rem 0.75rem;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .card-body p {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% if result %}
+                <!-- 性格类型展示区域 -->
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h2 class="mb-0">您的性格类型</h2>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-1 text-primary mb-3" style="font-weight: bold;">
+                            {{ result.type_code }}
+                        </div>
+                        {% if profile %}
+                            <h3 class="text-secondary mb-3">{{ profile.name }}</h3>
+                            <p class="lead">{{ profile.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 维度分析 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">性格维度分析</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for k, v, c in detail_items %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 dimension-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            {% if k == 'IE' %}
+                                                内向 vs 外向 (I/E)
+                                            {% elif k == 'SN' %}
+                                                感觉 vs 直觉 (S/N)
+                                            {% elif k == 'TF' %}
+                                                思考 vs 情感 (T/F)
+                                            {% elif k == 'JP' %}
+                                                判断 vs 知觉 (J/P)
+                                            {% endif %}
+                                        </h5>
+                                        <div class="progress mb-2" style="height: 25px;">
+                                            {% if v > 0 %}
+                                                {% widthratio v 5 100 as progress_width %}
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     data-width="{{ progress_width }}">
+                                                </div>
+                                            {% else %}
+                                                {% widthratio v|mul:-1 5 100 as progress_width %}
+                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                     data-width="{{ progress_width }}">
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="progress-label text-muted mb-2">
+                                            {% if v > 0 %}
+                                                {{ k.1 }} ({{ v|floatformat:1 }})
+                                            {% else %}
+                                                {{ k.0 }} ({{ v|floatformat:1|mul:-1 }})
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">
+                                            倾向：
+                                            {% if v > 0 %}
+                                                {{ k.1 }}型
+                                            {% else %}
+                                                {{ k.0 }}型
+                                            {% endif %}
+                                            {% if c %}(置信度: {{ c|floatformat:1 }}){% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 详细分析 -->
+                {% if profile %}
+                <div class="row">
+                    {% if profile.strengths %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">🌟 性格优势</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ profile.strengths }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if profile.growth %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0">📈 成长建议</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ profile.growth }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- 多维度分析 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">多维度深度分析</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- 性格特点 -->
+                            {% if profile.personality_traits %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-primary analysis-card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">🧠 性格特点</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.personality_traits }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 工作风格 -->
+                            {% if profile.work_style %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-info analysis-card">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">💼 工作风格</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.work_style }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 人际关系 -->
+                            {% if profile.interpersonal_relations %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-success analysis-card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">👥 人际关系</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.interpersonal_relations }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 情感表达 -->
+                            {% if profile.emotional_expression %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-danger analysis-card">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">💕 情感表达</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.emotional_expression }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 决策方式 -->
+                            {% if profile.decision_making %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-warning analysis-card">
+                                    <div class="card-header bg-warning text-white">
+                                        <h6 class="mb-0">🎯 决策方式</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.decision_making }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 压力管理 -->
+                            {% if profile.stress_management %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-secondary analysis-card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">😌 压力管理</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.stress_management }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 学习方式 -->
+                            {% if profile.learning_style %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-dark analysis-card">
+                                    <div class="card-header bg-dark text-white">
+                                        <h6 class="mb-0">📚 学习方式</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.learning_style }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 职业建议 -->
+                            {% if profile.career_suggestions %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-light analysis-card" style="border-color: #6f42c1 !important;">
+                                    <div class="card-header text-white" style="background-color: #6f42c1;">
+                                        <h6 class="mb-0">🚀 职业建议</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.career_suggestions }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 生活哲学 -->
+                            {% if profile.life_philosophy %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-light analysis-card" style="border-color: #fd7e14 !important;">
+                                    <div class="card-header text-white" style="background-color: #fd7e14;">
+                                        <h6 class="mb-0">🌟 生活哲学</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.life_philosophy }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- 沟通风格 -->
+                            {% if profile.communication_style %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-light analysis-card" style="border-color: #20c997 !important;">
+                                    <div class="card-header text-white" style="background-color: #20c997;">
+                                        <h6 class="mb-0">💬 沟通风格</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ profile.communication_style }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 操作按钮 -->
+                <div class="text-center mb-4">
+                    <a class="btn btn-primary btn-lg me-3" href="{% url 'mbti:result_pdf' %}">
+                        📄 导出详细报告
+                    </a>
+                    <a class="btn btn-outline-secondary btn-lg" href="{% url 'mbti:test' %}">
+                        🔄 重新测试
+                    </a>
+                </div>
+
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3>暂无测试结果</h3>
+                        <p class="text-muted">请先完成MBTI性格测试</p>
+                        <a href="{% url 'mbti:test' %}" class="btn btn-primary">开始测试</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 设置进度条宽度
+    const progressBars = document.querySelectorAll('.progress-bar[data-width]');
+    progressBars.forEach(function(bar) {
+        const width = bar.getAttribute('data-width');
+        bar.style.width = width + '%';
+    });
+});
+</script>
+{% endblock %}

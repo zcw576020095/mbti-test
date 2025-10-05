@@ -1,0 +1,7 @@
+asgiref==3.9.2
+charset-normalizer==3.4.3
+Django==5.2.6
+pillow==11.3.0
+reportlab==4.4.4
+sqlparse==0.5.3
+tzdata==2025.2
