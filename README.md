@@ -1,316 +1,323 @@
+<div align="center">
+
 # MBTI 性格测试系统
 
-一个基于 Django 的 MBTI 性格测试系统，支持登录、分页答题、进度自动保存、结果计算与 PDF 导出。
+**93 道标准题，3 分钟出一份可下载的人格分析报告**
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.2.6-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![ReportLab](https://img.shields.io/badge/PDF-ReportLab-D6002A)](https://www.reportlab.com/)
+[![Stars](https://img.shields.io/github/stars/zcw576020095/mbti-test?style=flat&logo=github&color=8957E5)](https://github.com/zcw576020095/mbti-test/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/zcw576020095/mbti-test?color=1F6FEB)](https://github.com/zcw576020095/mbti-test/commits)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+[在线体验](#-在线体验) · [功能特性](#-功能特性) · [界面展示](#-界面展示) · [快速开始](#-快速开始) · [部署](#-生产部署) · [常见问题](#-常见问题)
+
+答题进度自动落库，中途关掉浏览器回来接着答；<br>
+四个维度各自给出置信度，而不是只丢给你一个四字母代号。
+
+<img src="docs/images/demo.gif" width="820" alt="MBTI 测试系统演示">
+
+<sub>完整流程实录：浏览首页 → 登录 → 分页答题 → 生成报告</sub>
+
+</div>
+
+---
 
 ## 🌐 在线体验
 
-**👉 立即体验：[http://best-mbti-test.xin/](http://best-mbti-test.xin/)**
+**👉 [https://best-mbti-test.xin/](https://best-mbti-test.xin/)**
 
-无需安装，直接在线测试你的 MBTI 性格类型！3-5 分钟即可获得详细的性格分析报告。
+无需安装，注册即测。3-5 分钟拿到详细的性格分析报告，支持导出 PDF。
 
-> **备案信息**：京ICP备2025157088号
+> 备案信息：京ICP备2025157088号
+
+---
+
+<table>
+<tr>
+<td width="25%" align="center"><b>标准 93 题</b><br><sub>四维度计分<br>同分有明确判定规则</sub></td>
+<td width="25%" align="center"><b>进度不丢</b><br><sub>每页作答即时保存<br>翻页/关窗都能续上</sub></td>
+<td width="25%" align="center"><b>置信度</b><br><sub>四个维度分别给<br>倾向有多明显一眼看到</sub></td>
+<td width="25%" align="center"><b>PDF 报告</b><br><sub>ReportLab 生成<br>中文字体已处理</sub></td>
+</tr>
+</table>
 
 ---
 
 ## 🚀 功能特性
-- 用户注册、登录、登出，统一的消息提示（成功/失败原因）
-- MBTI 测试分页（每页 10 题），返回上一页保留答案
-- 自动保存答题进度（Session 存储，跨页不丢失）
-- 完成度与进度条展示，未完成时友好提示定位
-- 结果计算与类型码生成（如 INTJ），维度置信度与详情展示
-- 导出测试结果为 PDF 报告（ReportLab，可选安装）
-- 密码输入眼睛图标显示/隐藏，与输入框右侧对齐
 
+**测评流程**
+- 标准 MBTI 93 题，每页 10 题分页作答，可随时返回上一页修改
+- 答案即时写库，跨页、跨会话都不丢；未答完会提示还缺几题并定位过去
+- 顶部实时显示完成度与进度条
+
+**结果呈现**
+- 四维度（IE / SN / TF / JP）分数、倾向与**各自的置信度**
+- 生成类型码（如 `INTJ`），并展开该类型的多维解读：性格特点、工作风格、人际关系、
+  情感表达、决策方式、压力管理、学习方式、职业建议、生活哲学、沟通风格
+- 一键导出 PDF 报告
+
+**账号与后台**
+- 注册 / 登录 / 登出 / 改密码，密码框带显示切换
+- Django Admin 管理题库、问卷、用户与测试结果
 
 ## 🛠️ 技术栈
-- 后端：Django 5.2.6
-- 前端：HTML5、CSS3、JavaScript（Bootstrap 5 样式）
-- 数据库：SQLite（开发环境）
-- PDF：ReportLab（可选）
+
+| 层 | 选型 |
+|---|---|
+| 后端 | Django 5.2.6 |
+| 前端 | Bootstrap 5 + 原生 JS（**已本地化，零 CDN 依赖**） |
+| 数据库 | SQLite（默认） |
+| PDF | ReportLab |
+| 部署 | nginx 反代 + systemd + Let's Encrypt |
+
+> 静态资源全部落在 `static/vendor/`，字体走系统字体栈。国内服务器不会因为
+> CDN 连不上而样式错乱 —— 这是踩过之后改的（commit `60c4d46`）。
 
 ## 📋 系统要求
-- Python 3.11+（推荐）
-- Django 5.2+
-- 现代浏览器（Chrome / Firefox / Edge）
 
-## 🔧 安装与配置
-### 1. 进入项目目录并创建虚拟环境
+- Python 3.11+
+- Django 5.2+
+- 现代浏览器（Chrome / Firefox / Edge / Safari）
+
+## 🔧 快速开始
+
+### 1. 克隆与虚拟环境
+
 ```bash
+git clone git@github.com:zcw576020095/mbti-test.git
 cd mbti-test
 python -m venv venv
-venv\Scripts\activate  # Windows
-# 或
-source venv/bin/activate  # macOS/Linux
+source venv/bin/activate      # macOS / Linux
+# venv\Scripts\activate       # Windows
 ```
 
 ### 2. 安装依赖
+
 ```bash
 pip install -r requirements.txt
 ```
-> 说明：`reportlab` 为 PDF 导出所需的可选依赖，若不需要 PDF 功能可不安装。
 
-### 3. 数据库迁移
-数据库迁移是 Django 管理数据库结构变更的方式，需要按顺序执行：
+> `reportlab` 只有 PDF 导出用得到，不需要该功能可以不装。
+
+### 3. 建表
 
 ```bash
-# 生成迁移文件（检测模型变化）
-python manage.py makemigrations
-
-# 执行迁移（将迁移应用到数据库）
 python manage.py migrate
 ```
 
-**迁移说明**：
-- `makemigrations`：扫描模型定义的变化，生成迁移文件（保存在 `mbti/migrations/` 目录）
-- `migrate`：执行所有未应用的迁移，更新数据库结构
-- 首次运行会创建所有必要的表结构
-- 后续模型变更时，需要先运行 `makemigrations` 再运行 `migrate`
+模型有改动时才需要先 `makemigrations`。首次直接 `migrate` 即可建好全部表。
 
-### 4. 数据库初始化与数据导入
-
-项目提供了完整的数据库管理脚本来初始化数据和导入题库：
-
-#### 4.1 完整初始化流程（推荐）
+### 4. 导入题库与人格数据
 
 ```bash
-# 1. 确保已激活虚拟环境
-# source venv/bin/activate  # macOS/Linux
-# venv\Scripts\activate     # Windows
-
-# 2. 清空数据库（可选，如果需要完全重置）
-python database_management/clear_database.py
-
-# 3. 初始化数据库（导入标准MBTI 93题题库 + 创建管理员账号）
+# 导入标准 93 题 + 创建后台管理员
 python database_management/init_database.py
 
-# 4. 导入16种人格类型详细数据（可选，推荐）
+# 导入 16 种人格类型的详细解读（推荐，否则结果页只有类型码没有解读）
 python database_management/populate_personality_data.py
 ```
 
-#### 4.2 数据库管理脚本说明
+脚本清单：
 
-**`clear_database.py`** - 清空数据库
-- 清空所有测试相关数据（题目、回答、结果、用户等）
-- 保留超级用户账号
-```bash
-python database_management/clear_database.py
-```
+| 脚本 | 作用 |
+|---|---|
+| `init_database.py` | 导入 93 题题库 + 创建管理员 |
+| `add_questions_from_json.py` | 只导题库，不建账号 |
+| `populate_personality_data.py` | 导入 16 型详细解读，`get_or_create` 可重复跑 |
+| `clear_database.py` | 清空测试数据，保留超级用户 |
 
-**`init_database.py`** - 初始化数据库
-- 导入标准MBTI 93题题库（从JSON文件）
-- 创建Django后台管理员账号（用户名：`admin`，密码：`admin@123..`）
-```bash
-python database_management/init_database.py
-```
+默认管理员：`admin` / `admin@123..`，登录地址 `/admin/`。
+**部署到公网前请先改掉这个密码。**
 
-**`add_questions_from_json.py`** - 仅导入题库
-- 从JSON格式文件导入标准MBTI 93题题库
-- 不创建管理员账号（推荐使用此脚本单独导入题库）
-```bash
-python database_management/add_questions_from_json.py
-```
-> **注意**：这是推荐的题库导入方式，使用JSON格式更清晰易维护。
+### 5. 启动
 
-**`populate_personality_data.py`** - 导入人格类型数据
-- 导入16种MBTI人格类型的详细描述数据
-- 包含丰富的描述信息（性格特点、工作风格、人际关系、职业建议等）
-- 使用 `get_or_create`，可安全重复执行
-```bash
-python database_management/populate_personality_data.py
-```
-
-**`validate_scoring_rules.py`** - 验证计分规则
-- 验证标准MBTI 93题的计分规则是否正确
-```bash
-python database_management/validate_scoring_rules.py
-```
-
-#### 4.3 管理员账号
-
-初始化数据库后会自动创建管理员账号：
-- **用户名**：`admin`
-- **密码**：`admin@123..`
-- **访问地址**：`http://127.0.0.1:8000/admin/`
-
-> **注意**：官方 MBTI 题库与评估工具受版权与商标保护，禁止在未经授权的情况下复刻。当前题库为开放版、结构兼容的替代方案，使用标准MBTI 93题计分规则，评分逻辑位于 `mbti/services_standard.py`。
-
-### 5. 启动开发服务器
 ```bash
 python manage.py runserver 127.0.0.1:8000
 ```
-访问 `http://127.0.0.1:8000`。
 
-## 📁 项目结构
-```
-mbti-test/
-├── manage.py                    # Django 管理脚本
-├── requirements.txt             # Python 依赖包
-├── db.sqlite3                   # SQLite 数据库（开发环境）
-├── mbti_site/                   # 项目配置目录
-│   ├── settings.py              # Django 设置
-│   ├── urls.py                  # 主路由配置
-│   ├── middleware.py            # 自定义中间件（session隔离）
-│   └── wsgi.py                  # WSGI 配置
-├── mbti/                        # MBTI 应用
-│   ├── models.py                # 数据模型（Question, Response, Result, TypeProfile等）
-│   ├── views.py                 # 视图函数（测试、保存、提交、结果、PDF导出）
-│   ├── urls.py                  # MBTI 路由配置
-│   ├── services_standard.py     # 标准MBTI计分服务
-│   ├── admin.py                 # Django后台管理配置
-│   └── migrations/              # 数据库迁移文件
-├── users/                       # 用户应用
-│   ├── models.py                # 用户模型（使用Django默认User）
-│   ├── views.py                 # 视图函数（登录、注册、登出、修改密码）
-│   ├── forms.py                 # 表单（登录、注册）
-│   └── urls.py                  # 用户路由配置
-├── database_management/         # 数据库管理脚本
-│   ├── init_database.py         # 初始化数据库（导入题库+创建管理员）
-│   ├── clear_database.py        # 清空数据库
-│   ├── add_questions_from_json.py  # 从JSON导入题库
-│   ├── populate_personality_data.py # 导入16种人格类型数据
-│   └── validate_scoring_rules.py   # 验证计分规则
-├── data/                        # 数据文件目录
-│   └── questions_standard_mbti_93.json  # 标准MBTI 93题JSON格式题库
-├── templates/                   # 模板文件
-│   ├── base.html                # 基础模板
-│   ├── users/                   # 用户相关模板
-│   │   ├── login.html
-│   │   ├── register.html
-│   │   └── password_change.html
-│   └── mbti/                    # MBTI相关模板
-│       ├── home.html
-│       ├── test.html
-│       └── result.html
-├── static/                      # 静态文件
-│   └── css/
-│       └── style.css            # 样式文件
-└── screenshots/                 # 项目截图
-```
+打开 http://127.0.0.1:8000 。
+
+> 题库说明：官方 MBTI 题目与评估工具受版权与商标保护。本项目题库为开放版、
+> 结构兼容的替代方案，计分逻辑见 `mbti/services_standard.py`。
 
 ## 🎨 界面展示
-以下截图均位于 `screenshots/` 目录：
 
-### 主页（Index）
+截图位于 [`screenshots/`](screenshots/) 目录。
+
+### 首页
+
 ![主页 1](screenshots/index1.png)
 ![主页 2](screenshots/index2.png)
 ![主页 3](screenshots/index3.png)
 
-### 登录页面
-![登录](screenshots/login.png)
+### 登录与注册
 
-### 注册页面
-![注册](screenshots/register.png)
+| 登录 | 注册 |
+|:---:|:---:|
+| ![登录](screenshots/login.png) | ![注册](screenshots/register.png) |
 
-### 测试页面
-![注册](screenshots/test.png)
+### 答题
 
-### 测试详情
-![测试详情](screenshots/test_info.png)
+| 测试页 | 测试详情 |
+|:---:|:---:|
+| ![测试](screenshots/test.png) | ![测试详情](screenshots/test_info.png) |
 
-### 测试结果
+### 结果与报告
+
 ![测试结果](screenshots/test_result.png)
 
-### PDF 测试报告
-![测试报告 1](screenshots/test_report1.png)
-![测试报告 2](screenshots/test_report2.png)
+| PDF 报告 · 1 | PDF 报告 · 2 |
+|:---:|:---:|
+| ![测试报告 1](screenshots/test_report1.png) | ![测试报告 2](screenshots/test_report2.png) |
 
-## 🧭 使用指南
-### 1. 登录与注册
-- 进入登录或注册页，密码框右侧有眼睛图标可切换显示/隐藏。
-- 登录成功或失败（如用户名/密码错误）将通过顶部消息区域进行提示。
+## 📁 项目结构
 
-### 2. 进行 MBTI 测试
-- 每页 10 题，可点击“下一页/上一页”。
-- 选择选项会自动保存到 Session；返回上一页不会丢失选择。
-- 未完成当前页题目时，点击下一步会弹出提示并定位到未完成题目。
+```
+mbti-test/
+├── manage.py
+├── requirements.txt
+├── db.sqlite3                   # SQLite（不入版本库）
+├── mbti_site/                   # 项目配置
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── mbti/                        # 测评应用
+│   ├── models.py                # Questionnaire / Question / Response / Result / TypeProfile
+│   ├── views.py                 # 答题、保存、提交、结果、PDF
+│   ├── services_standard.py     # 标准 93 题计分
+│   ├── services.py              # Likert 计分（兼容旧问卷）
+│   └── admin.py
+├── users/                       # 账号应用
+├── database_management/         # 初始化与导入脚本
+├── data/
+│   └── questions_standard_mbti_93.json
+├── templates/
+├── static/
+│   ├── css/style.css
+│   └── vendor/                  # Bootstrap 本地副本
+├── staticfiles/                 # collectstatic 产物（不入版本库）
+├── docs/images/                 # README 演示动图
+└── screenshots/
+```
 
-### 3. 提交与结果
-- 提交前需完成所有题目，系统会校验并提示缺失数量。
-- 结果页显示四维度分数与倾向，生成类型码（如 `INTJ`）。
-- 可将结果导出为 PDF 报告（需安装 `reportlab`）。
+## 🧭 路由
 
-## 📝 API 文档
+| 端点 | 方法 | 说明 |
+|---|---|---|
+| `/` | GET | 首页，介绍与 16 型科普 |
+| `/test/` | GET | 答题页（分页） |
+| `/save-progress/` | POST | 保存当页作答（AJAX） |
+| `/submit/` | POST | 提交并计算结果 |
+| `/result/` | GET | 结果页 |
+| `/result/pdf/` | GET | 导出 PDF 报告 |
+| `/users/login/` | GET/POST | 登录 |
+| `/users/register/` | GET/POST | 注册 |
+| `/users/password-change/` | GET/POST | 修改密码 |
+| `/admin/` | GET | Django 后台 |
 
-| 端点 | 方法 | 描述 |
-|------|------|------|
-| `/` | GET | 主页或入口（按项目配置） |
-| `/mbti/` | GET | MBTI 首页 |
-| `/mbti/test/` | GET | 测试页（支持分页） |
-| `/mbti/save-progress/` | POST | 保存作答进度（AJAX，会话存储） |
-| `/mbti/submit/` | POST | 提交答案并计算结果 |
-| `/mbti/result/` | GET | 结果展示 |
+## 📊 计分说明
 
-## 📊 结果计算说明
-本项目使用**标准MBTI 93题计分规则**：
-- **计分方式**：每题选择A或B，按照标准MBTI规则累加维度分数
-- **四个维度**：IE（外向-内向）、SN（感觉-直觉）、TF（思考-情感）、JP（判断-知觉）
-- **类型判定**：每个维度选择分数较高的一方，同分时按规则选择（E/I同分选I，S/N同分选N，T/F同分选F，J/P同分选P）
-- **置信度计算**：基于各维度的分数差异，用于评估结果的可靠性
-- 详细计分逻辑参见 `mbti/services_standard.py`
+采用**标准 MBTI 93 题**规则：
 
-## 🔐 安全特性
-- CSRF 保护、会话管理
-- 密码哈希存储
-- 基于消息框的统一错误与成功提示
+- 每题二选一，按题目所属维度与方向累加
+- 四个维度：IE（外向-内向）、SN（感觉-直觉）、TF（思考-情感）、JP（判断-知觉）
+- 每个维度取高分一侧；**同分按固定规则**判定：E/I 同分取 I、S/N 同分取 N、
+  T/F 同分取 F、J/P 同分取 P
+- 置信度由该维度两侧分差除以该维度满分得出，用于判断倾向是否明显
+
+实现见 `mbti/services_standard.py`。
+
+## 🔐 安全
+
+- CSRF 保护、会话管理、密码哈希存储
+- 生产环境需关闭 `DEBUG`、收紧 `ALLOWED_HOSTS`、配置 `CSRF_TRUSTED_ORIGINS`
+- `SECRET_KEY` 通过环境变量 `DJANGO_SECRET_KEY` 注入，不要沿用代码里的兜底值
+
+## 🚀 生产部署
+
+以 nginx 反代 + systemd 托管为例。
+
+**1. 收集静态文件**（这一步不能省）
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+**2. nginx 的 `/static/` 指向 `STATIC_ROOT`**
+
+```nginx
+location /static/ {
+    alias /opt/mbti-test/staticfiles/;   # 不是项目的 static/
+    expires 7d;
+}
+
+location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP         $remote_addr;
+}
+```
+
+> ⚠️ 必须指向 `collectstatic` 的产物目录。Django Admin 的 CSS/JS 打包在
+> `django.contrib.admin` 包内，不收集就只存在于 site-packages 里；而 nginx 的
+> `/static/` 是前缀匹配，会抢在反代之前吃掉所有 `/static/` 请求，Django 再也没机会
+> 自己发这些文件 —— 结果就是后台页面样式全 404。
+
+**3. HTTPS 下 Django 要补的配置**
+
+```python
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = ["https://your-domain.com"]
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+DEBUG = False
+ALLOWED_HOSTS = ["your-domain.com"]
+```
+
+不加 `SECURE_PROXY_SSL_HEADER`，`request.is_secure()` 恒为 False，https 请求会被
+重定向回 http；不加 `CSRF_TRUSTED_ORIGINS`，Django 4+ 会让登录、注册、提交答题
+全部 CSRF 校验失败。
 
 ## ❗ 常见问题
 
-**PDF 字体乱码**：
-- Windows 下系统会自动尝试注册常见中文字体
-- 如仍出现乱码，可在代码中自定义字体路径（修改 `mbti/views.py` 中的 `result_pdf_view` 函数）
+**后台页面没有样式**
+`/static/admin/css/base.css` 返回 404 就是这个原因：漏了 `collectstatic`，或者
+nginx 的 `/static/` 指到了项目的 `static/` 而不是 `STATIC_ROOT`。按上面部署章节改。
+自查命令：
 
-**静态文件**：
-- 开发环境确保 `DEBUG=True`，Django会自动处理静态文件
-- 生产环境需运行 `python manage.py collectstatic` 收集静态文件并配置服务器
-
-**数据库问题**：
-- 如果数据库迁移出错，可以删除 `db.sqlite3` 和 `mbti/migrations/` 目录下除 `__init__.py` 外的文件，然后重新运行 `makemigrations` 和 `migrate`
-
-## 🚀 生产部署（示例）
 ```bash
-pip install gunicorn
-python manage.py collectstatic --noinput
-# 示例：WSGI + 反向代理（略）
+curl -o /dev/null -w "%{http_code}\n" https://your-domain.com/static/admin/css/base.css
 ```
 
-## ⬆️ 提交到 GitHub（SSH 方式）
-以下步骤在 Windows PowerShell 中执行：
-- 生成 SSH Key（推荐 Ed25519）：
-```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-```
-- 将公钥内容（`%USERPROFILE%\.ssh\id_ed25519.pub`）添加到 GitHub：Settings → SSH and GPG keys → New SSH key。
-- 验证连接：
-```bash
-ssh -T git@github.com
-```
-- 在项目根目录初始化并设置远程为 SSH：
-```bash
-cd mbti-test
-git init
-git config user.name "Your Name"
-git config user.email "your_email@example.com"
-# 新仓库：
-git remote add origin git@github.com:YOUR_USERNAME/YOUR_REPO.git
-# 若已有远程（HTTPS），改为 SSH：
-git remote set-url origin git@github.com:YOUR_USERNAME/YOUR_REPO.git
-```
-- 提交与推送：
-```bash
-git add -A
-git commit -m "docs: 更新题库与类型导入说明，新增 SSH 提交指南"
-git branch -M main
-git push -u origin main
-```
+**PDF 中文乱码**
+需要指向一个中文字体。通过环境变量 `PDF_FONT_PATH` 指定，或改
+`mbti/views.py` 的 `result_pdf_view`。
 
+**结果页只有类型码，没有详细解读**
+没导人格数据，跑 `python database_management/populate_personality_data.py`。
+
+**样式错乱 / 页面加载很慢**
+本项目已把 Bootstrap 本地化，不依赖任何 CDN。如果仍然错乱，先确认
+`/static/css/style.css` 能正常返回 200。
+
+**迁移出错**
+删掉 `db.sqlite3` 与 `mbti/migrations/` 下除 `__init__.py` 外的文件，
+重新 `makemigrations` + `migrate`，然后重新导入题库。
 
 ## 📄 许可证
-本项目采用 MIT 许可证。
+
+[MIT](LICENSE)
 
 ## 🙏 致谢
-- Django 社区
-- Bootstrap 团队
-- ReportLab 项目
+
+Django · Bootstrap · ReportLab
 
 ---
-⭐ 如果这个项目对你有帮助，请给它一个星标！
+
+<div align="center">
+⭐ 如果这个项目对你有帮助，欢迎点个 Star
+</div>

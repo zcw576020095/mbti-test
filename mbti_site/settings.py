@@ -74,6 +74,11 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# collectstatic 的落地目录。生产环境 nginx 直接 alias 到这里，
+# 必须收集而不能只指向 static/：admin 的 CSS/JS 在 django.contrib.admin 包内，
+# 不收集的话 nginx 抢下 /static/ 后 admin 页面样式全 404（后台裸奔）。
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "users:login"
